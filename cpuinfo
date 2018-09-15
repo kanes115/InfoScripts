@@ -1,0 +1,59 @@
+#!/bin/bash
+
+usage(){
+    echo -e "Usage:$0 [OPTIONS]" 1>&2
+    echo -e 1>&2
+    echo -e "OPTIONS:" 1>&2
+    echo -e "\t-f, frequency mode, show CPU frequency" 1>&2
+    echo -e "\t-u, usage mode, show CPU usage" 1>&2
+    echo -e "\t-c, use , as a decimal point" 1>&2
+    echo -e 1>&2
+    exit 1
+}
+
+
+while getopts "ufc" f
+do
+    case "${f}" in
+        u)
+            usage_mode=1
+            ;;
+        f)
+            frequency_mode=1
+            ;;
+        c)
+            c_flag=1
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+
+if [[ ${usage_mode} -eq 1 && ${frequency_mode} -eq 1 ]]
+then
+    echo "You can't use -u and -f together" 1>&2
+    exit 1
+elif [[ ${usage_mode} -eq 0 && ${frequency_mode} -eq 0 ]]
+then
+    usage
+fi
+
+
+if [[ ${usage_mode} -eq 1 ]]
+then
+    res=$(top -sbn1 | sed -n 's/.*%CPU.*:\s*\([[:digit:]]\+[.,][[:digit:]]\+\).*/\1/gp')
+    if [[ ${c_flag} -ne 1 ]]
+    then
+        res=$(tr , . <<< "${res}")
+    fi
+fi
+
+if [[ ${frequency_mode} -eq 1 ]]
+then
+    res=$(lscpu | awk '/CPU max/{printf("%d MHz\n", $NF)}')
+fi
+
+echo ${res}
+exit 0
