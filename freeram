@@ -42,8 +42,7 @@ done
 
 if [[ ${count} -eq 0 ]]
 then
-    mult=1
-    unit="kB"
+    setkB
 elif [[ ${count} -gt 1 ]]
 then
     echo "Please, use only one size flag" 1>&2
