@@ -1,0 +1,57 @@
+#!/bin/bash
+
+usage(){
+    echo -e "Usage:$0 [OPTIONS]" 1>&2
+    echo -e 1>&2
+    echo -e "OPTIONS:" 1>&2
+    echo -e "\t-b, output in bytes" 1>&2
+    echo -e "\t-k, output in kilobytes" 1>&2
+    echo -e "\t-h, show this info" 1>&2
+    echo -e 1>&2
+    exit 1
+}
+
+setB(){
+    mult=1024
+    unit="B"
+    ((count++))
+}
+
+setkB(){
+    mult=1
+    unit="kB"
+    ((count++))
+}
+
+
+count=0
+while getopts "bkh" f
+do
+    case "${f}" in
+        b)
+            setB
+            ;;
+        k)
+            setkB
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+if [[ ${count} -eq 0 ]]
+then
+    mult=1
+    unit="kB"
+elif [[ ${count} -gt 1 ]]
+then
+    echo "Please, use only one size flag" 1>&2
+    exit 1
+fi
+
+awk -v "awkmult=${mult}" -v "awkunit=${unit}"\
+    '/MemTotal/{print $2*awkmult FS awkunit}' /proc/meminfo
+
+
+
