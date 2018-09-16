@@ -7,12 +7,14 @@ usage(){
     echo -e "\t-f, frequency mode, show CPU frequency" 1>&2
     echo -e "\t-u, usage mode, show CPU usage" 1>&2
     echo -e "\t-c, use , as a decimal point" 1>&2
+    echo -e "\t-s, don't show unit" 1>&2
+    echo -e "\t-h, show help" 1>&2
     echo -e 1>&2
     exit 1
 }
 
 
-while getopts "ufc" f
+while getopts "ufhsc" f
 do
     case "${f}" in
         u)
@@ -24,7 +26,10 @@ do
         c)
             c_flag=1
             ;;
-        *)
+        s)
+            nounit_flag=1
+            ;;
+        h|*)
             usage
             ;;
     esac
@@ -52,8 +57,13 @@ fi
 
 if [[ ${frequency_mode} -eq 1 ]]
 then
-    res=$(lscpu | awk '/CPU max/{printf("%d MHz\n", $NF)}')
+    if [[ ${nounit_flag} -eq 1 ]]
+    then
+        res=$(lscpu | awk '/CPU max/{printf("%d\n", $NF)}')
+    else
+        res=$(lscpu | awk '/CPU max/{printf("%d MHz\n", $NF)}')
+    fi
 fi
 
-echo ${res}
+echo "${res}"
 exit 0
